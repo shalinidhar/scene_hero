@@ -20,6 +20,9 @@
 # production
 /build
 
+#database info 
+/backend/db.ts
+
 # misc
 .DS_Store
 *.pem
