@@ -41,6 +41,8 @@ export default async function Page({params}) {
       EX: DEFAULT_EXPIRATION, 
     });      
   }
+
+  console.log(story);
   return (
     <Screenplay projectId={id} initialValue={story} page_count={page_count}/> //pass the data in here
   )

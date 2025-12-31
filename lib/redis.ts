@@ -6,6 +6,8 @@ import { createClient } from 'redis';
 const redisClient = createClient()
 let connected = false;
 
+redisClient.on('error', (err) => console.log('Redis Client Error', err));
+
 async function getRedisClient() {
   if (!connected) {
     await redisClient.connect();

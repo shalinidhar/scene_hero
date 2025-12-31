@@ -79,12 +79,12 @@ export default function Screenplay({projectId, initialValue, page_count}:Props){
     const [showPDF, handlePDF] = useState(false)
 
     const [connected, setConnected] = useState(false)
-    const [sharedType, setSharedType] = useState()
-    const [provider, setProvider] = useState<Y.XmlText>()
+    const [sharedType, setSharedType] = useState<Y.XmlText>()
+    const [provider, setProvider] = useState<WebsocketProvider>()
     const [yjsSynced, setYjsSynced] = useState(false)
     const [yDoc, setDoc] = useState<Y.Doc>()
 
-    // Connects to Yjs provider and document
+    // Connects to Y.js provider and document
     useEffect(() => {
       const doc = new Y.Doc()
       setDoc(doc)
@@ -93,8 +93,7 @@ export default function Screenplay({projectId, initialValue, page_count}:Props){
       const yProvider = new WebsocketProvider(
           'ws://localhost:1234', projectId.toString(),
           doc,
-        )
-
+        ) 
       yProvider.on('sync', setConnected)
       setProvider(yProvider)
       return () => {
@@ -103,32 +102,31 @@ export default function Screenplay({projectId, initialValue, page_count}:Props){
         yProvider?.destroy()
       }
     },[projectId])
-    //const [editor] = useState(() => withReact(withHistory(createEditor())))
-    //const [editor] = useState(() => withReact(withHistory(withYjs(createEditor(), sharedType))))
+
     //preparing the editor with yjs plugin and normalisation rules
     const editor = useMemo(() => {
       if (!sharedType && !connected){
         return withReact(withHistory(createEditor()))
       }
     const e = withReact(withHistory(withYjs(createEditor(), sharedType)))
-    let initialized = false;
-    // // method that ensures editor always has at least 1 valid child
-    // const { normalizeNode } = e
-    // e.normalizeNode = (entry, options) => {
-    //   const [node] = entry
 
-    //   if (!Editor.isEditor(node) || node.children.length > 0 || sharedType.length>0) {
-    //     return normalizeNode(entry, options)
-    //   }
-    //   if (sharedType.length===0 && !initialized){
-    //     Transforms.insertNodes(editor, value, { at: [0] })
-    //     return
-    //   }
-    //   return normalizeNode(entry,options)
-      
-    // }
+    // method that ensures editor always has at least 1 valid child
+    const { normalizeNode } = e
+    e.normalizeNode = (entry, options) => {
+      const [node] = entry
+      if (!Editor.isEditor(node) || node.children.length > 0 || sharedType.length>0) {
+        return normalizeNode(entry, options)
+      }
+      //If this is the first opener of the shared document, only render 
+      // original values
+      if (sharedType.length===0){
+        Transforms.insertNodes(editor, value, { at: [0] })
+        return
+      }
+      return normalizeNode(entry,options)
+    }
     return e
-    }, [sharedType])
+    }, [sharedType, connected])
 
   useEffect(() => { //connect to yjs
     if (!sharedType || !YjsEditor.isYjsEditor(editor)) return;
@@ -143,7 +141,7 @@ export default function Screenplay({projectId, initialValue, page_count}:Props){
       let path = [index]
       Transforms.setNodes(
         editor,
-        { type: 'character' }, // change to whatever you want
+        { type: 'character' }, // TO DO change to whatever user wants
         { at: path }
       );
     };
@@ -158,7 +156,7 @@ export default function Screenplay({projectId, initialValue, page_count}:Props){
           "Content-Type": "application/json",  
         },
         body: JSON.stringify({
-        story: value,  // <-- this is the field you want to update
+        story: value,  // <-- the story (value) that gets updated
         page_count:pages
         }),
       }); 
@@ -169,6 +167,7 @@ export default function Screenplay({projectId, initialValue, page_count}:Props){
       console.log("In add element: ")
 
       // Get current selection path and find the insert location
+      // TO DO: handle edge case: If path is null/not selected
       const currentPath = Editor.path(editor, editor.selection!.focus)
       console.log("cp ", currentPath)
       const insertPath = Path.next(currentPath)
@@ -222,8 +221,6 @@ export default function Screenplay({projectId, initialValue, page_count}:Props){
           
           case 'heading':
             return <p className="uppercase text-left mx-auto max-w-[610px]"  {...props.attributes}>{props.children}</p>
-          
-          
           default: 
             return <p {...props.attributes}>{props.children}</p>
         }
@@ -251,9 +248,9 @@ export default function Screenplay({projectId, initialValue, page_count}:Props){
       )
     }
 
-    if (!sharedType) { //also add !socket.connected
-    return <div>Loading…</div>
-  }
+    // if (!sharedType) { //also add !socket.connected
+    // return <div>Loading…</div>
+    // }
     return (
         <div className="min-h-screen bg-rose-200">
             <header>
@@ -269,7 +266,6 @@ export default function Screenplay({projectId, initialValue, page_count}:Props){
 
             </header>
 
-            
             <Slate editor={editor} initialValue={value} onChange = {(newValue: any) =>{setValue(newValue); console.log(value)}}>
               <Toolbar></Toolbar>             
                     <div ref = {printRef} id="pdf">

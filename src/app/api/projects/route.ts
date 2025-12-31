@@ -40,7 +40,6 @@ export async function PUT (req: NextRequest){
 }
 
 export async function PATCH (req: NextRequest){
-    console.log("EKHANE BHAI")
     const body = await req.json(); 
     const story = JSON.stringify(body.story);
     const pages = body.page_count;
@@ -63,8 +62,6 @@ export async function PATCH (req: NextRequest){
                 EX: 360000, 
                 })
             }
-            
-
             
             return NextResponse.json(result.rows);
         }
