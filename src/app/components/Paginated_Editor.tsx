@@ -29,7 +29,6 @@ export default function Paginated_Editor({ renderElement, renderLeaf, value, set
     }, [pages]);
 
     //const [index, updateIndex]=useState(0)
-
     //track the height 
     useEffect(() => {
       if (!lastRef.current) return;
@@ -42,7 +41,7 @@ export default function Paginated_Editor({ renderElement, renderLeaf, value, set
       });
 
       observer.observe(lastRef.current);
-    }, [pages.length]);
+    }, [pages]);
 
     //if exceeds 864
     useEffect(()=>{
@@ -50,11 +49,11 @@ export default function Paginated_Editor({ renderElement, renderLeaf, value, set
         //case: add a page to the end 
         // (not letting cursor go to a point and inserting dummy node instead)
         //what happens: the moment it IS 864, it skips that line and creates node
-        if (height%(864)==0 && height>10){ //add page number to formula
+        if (height==864 || height%(864*(pages)+ 216*(pages-1)) == 0){ //add page number to formula
           console.log("enters print statement: ")
             Transforms.insertNodes(
               editor,
-              { type: 'action', children: [{ text: '\n\n\n\n\n\n\n\n' }] }, //9 lines added
+              { type: 'buffer', children: [{ text: '\n\n\n\n\n\n\n\n' }] }, //9 lines added (length = 216)
               {at:[editor.children.length]}
             ) 
             changePages(pages+1)       
@@ -66,7 +65,7 @@ export default function Paginated_Editor({ renderElement, renderLeaf, value, set
                   focus: Editor.end(editor, []),
               })
         } 
-        //Page count decreases by one 864+27x 216 
+        //case: removing last page. Page count decreases by one 
         if (height%(864+216)==0 && height>27){
           Transforms.removeNodes(editor)
           Transforms.removeNodes(editor)  //REMOVING THIS NODE AS WELL BECAUSE THIS GETS ADDED (HAVE TO CHANGE LOGIC A BIT)
@@ -75,11 +74,9 @@ export default function Paginated_Editor({ renderElement, renderLeaf, value, set
             changePages(pages-1)
           }          
         } 
-        //HANDLE ADDING AND REMOVING PAGES
-        //HANDLE CONTINUATIONS
-      
-  
-
+        //case: 
+        //HANDLE user adds text to a full page 
+    
     },[height]);
 
     const handleInput=(page:number)=>{
@@ -104,50 +101,22 @@ export default function Paginated_Editor({ renderElement, renderLeaf, value, set
   return (
     <>
     <div className= 'relative'>
-
     { pageNumbers.map((page) => (
-    
-    
     <div key={page}>
     <div className="flex justify-center"> 
         <div className="bg-white w-[816px] h-[1056px] shadow-xl">
-        <p>....</p>
+        <p>...</p>
         <p>{page+1}</p>
-        <p>....</p>
-
-
-        {/* <div className="font-[Courier] mx-auto max-w-[610px] max-h-[865px] w-full"
-        ref={page==(pages.length-1)? lastRef:null}
-        contentEditable 
-        data-slate-editor
-        data-slate-node="element"
-        data-slate-object="block"
-        suppressContentEditableWarning 
-        onInput={() => handleInput(page)} 
-        onClick={()=> handleClick(page)}
-        onSelect={handleSelect}
-        >
-        {value.slice(start, end).map((element, index) => {
-        return renderElement({
-        element,
-        attributes: {
-        key: index,
-        'data-slate-node': 'element',
-        },
-        children: element.children.map(child => child.text).join('') //loop through and render all children
-        });
-        })}        
-        </div> */}
-                   
+        <p>....</p>      
     </div>
     </div>
     <p>  --- </p>
     </div>
     ))
     }
-    <div className="absolute top-0 left-0 z-10 w-full">
+    <div className="absolute top-20 left-0 z-10 w-full">
           <div className= "relative flex items-start">
-          <Editable className="text-[18px] font-[Courier] mx-auto max-w-[610px] w-full"
+          <Editable className="text-[18px] font-[Courier] mx-auto max-w-[610px] w-full outline-none"
             renderElement={renderElement}
             renderLeaf={renderLeaf}
             ref = {lastRef}
@@ -215,9 +184,6 @@ export default function Paginated_Editor({ renderElement, renderLeaf, value, set
           </div>
     </div>
     </div>
-
-    
   </> 
   )  
-
     };

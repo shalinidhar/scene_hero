@@ -20,7 +20,7 @@
 # production
 /build
 
-#database info 
+#postgres database set up
 /backend/db.ts
 
 # misc

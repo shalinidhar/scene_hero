@@ -1,4 +1,3 @@
-// lib/redis.ts
 import { createClient } from 'redis';
 
 //let redisClient: ReturnType<typeof createClient>;

@@ -215,17 +215,25 @@ export default function Screenplay({projectId, initialValue, page_count}:Props){
             return <p className="text-center mx-auto max-w-[270px]"  {...props.attributes}>{props.children}</p>
           case 'dialogue':
             return <p className = "text-left mx-auto max-w-[300px]" {...props.attributes}>{props.children}</p>
-          
           case 'transition':
             return <p className = "uppercase text-right mx-auto max-w-[480px]" {...props.attributes}>{props.children}</p>
-          
           case 'heading':
             return <p className="uppercase text-left mx-auto max-w-[610px]"  {...props.attributes}>{props.children}</p>
+          case 'buffer':
+            return <p {...props.attributes}>{props.children}</p>
           default: 
             return <p {...props.attributes}>{props.children}</p>
         }
         
     }, [])
+
+    // const withVoidElements = editor => {
+    //   const { isVoid } = editor
+    //   editor.isVoid = element => {
+    //     return element.type === 'buffer' ? true : isVoid(element)
+    //   }
+    //   return editor
+    // }
 
     // Define a leaf rendering function that is memoized with `useCallback`.
     const renderLeaf = useCallback(props => {
@@ -241,16 +249,12 @@ export default function Screenplay({projectId, initialValue, page_count}:Props){
             fontStyle: props.leaf.italic ? 'italic' : 'normal',
             textDecoration: props.leaf.underline ? 'underline' : 'none'
           }}
-          
         >
           {props.children}
         </span>
       )
     }
 
-    // if (!sharedType) { //also add !socket.connected
-    // return <div>Loading…</div>
-    // }
     return (
         <div className="min-h-screen bg-rose-200">
             <header>
@@ -263,25 +267,24 @@ export default function Screenplay({projectId, initialValue, page_count}:Props){
               className="left-[300px] bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-1 px-2 border border-blue-500 hover:border-transparent rounded"
               onClick={exportToPDF}>
               EXPORT TO PDF</button>                   
-
             </header>
-
+ 
             <Slate editor={editor} initialValue={value} onChange = {(newValue: any) =>{setValue(newValue); console.log(value)}}>
-              <Toolbar></Toolbar>             
-                    <div ref = {printRef} id="pdf">
-                    <Paginated_Editor
-                    renderElement={renderElement} 
-                    renderLeaf={renderLeaf} 
-                    value={value} 
-                    setValue={setValue}                    
-                    changeValue={changeValue} 
-                    addElement={addElement}
-                    saveValue ={saveValue}
-                    editor={editor}
-                    pages={pages}
-                    changePages={changePages}>
-                    </Paginated_Editor> 
-                    </div>                                      
+              <Toolbar></Toolbar>
+              <div ref = {printRef} id="pdf">
+                <Paginated_Editor
+                  renderElement={renderElement} 
+                  renderLeaf={renderLeaf} 
+                  value={value} 
+                  setValue={setValue}                    
+                  changeValue={changeValue} 
+                  addElement={addElement}
+                  saveValue ={saveValue}
+                  editor={editor}
+                  pages={pages}
+                  changePages={changePages}>
+                </Paginated_Editor> 
+              </div>                                      
             </Slate>          
         </div>
     )
